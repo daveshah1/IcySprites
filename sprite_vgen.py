@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from __future__ import (absolute_import, division,
                         print_function, unicode_literals)
-                        
+
 import math
 
 
@@ -37,12 +37,12 @@ def write_vlog(sprites, filename):
         romoffsets = []
         current_offset = 0
         for i in range(N):
-            (x, y, width, height, data) = sprites[N]
+            (x, y, width, height, data) = sprites[i]
             romoffsets.append(current_offset)
             current_offset += next_pow2(width) * next_pow2(height)
 
         romsize = current_offset
-        awidth = math.ceil(math.log2(romsize))
+        awidth = math.ceil(math.log(romsize, 2))
 
         print("reg active = 1'b0;", file=vf)
         print("reg [%d:0] romaddr = 0;" % (awidth - 1), file=vf)
@@ -56,19 +56,19 @@ def write_vlog(sprites, filename):
         for i in xrange(N-1, 0, -1):
             (x, y, width, height, data) = sprites[i]
             c_else = " else " if i < (N-1) else ""
-            print("\t\t%sif(enabled[%d] && (vx >= %d) && (vx < %d) && (vy >= %d) && (vy < %d)) begin" %
-                  (c_else, i), file=vf)
-            print("\t\t\tactive <= 1'b1", file=vf)
+            print("\t\t%sif(enables[%d] && (vx >= %d) && (vx < %d) && (vy >= %d) && (vy < %d)) begin" %
+                  (c_else, i, x, (x + width), y, (y+width)), file=vf)
+            print("\t\t\tactive <= 1'b1;", file=vf)
             print("\t\t\tromaddr <= %d + ((vy - %d) * %d) + (vx - %d);" % (romoffsets[i], y, next_pow2(width), x), file=vf)
             print("\t\tend", file=vf)
         print("\t\telse begin", file=vf)
-        print("\t\t\tactive <= 1'b0", file=vf)
+        print("\t\t\tactive <= 1'b0;", file=vf)
         print("\t\tend", file=vf)
         print("\tend", file=vf)
         print("end", file=vf)
         print("", file=vf)
         print("// Sprite data ROM", file=vf)
-        romfilename = filename.replace(".v", "") + _srom.dat
+        romfilename = filename.replace(".v", "") + "_srom.dat"
         print("reg [%d:0] srom[0:%d];" % (pixel_width - 1, romsize - 1), file=vf)
         print("initial $readmemh(\"%s\", srom);" % (os.path.basename(romfilename)), file=vf)
         print("", file=vf)
@@ -84,7 +84,7 @@ def write_vlog(sprites, filename):
         print("endmodule", file=vf);
         with open(romfilename, 'w') as rf:
             for i in range(N):
-                (x, y, width, height, data) = sprites[N]
+                (x, y, width, height, data) = sprites[i]
                 for ry in range(next_pow2(height)):
                     for rx in range(next_pow2(width)):
                         pix = 0
