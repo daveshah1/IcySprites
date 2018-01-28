@@ -53,11 +53,11 @@ def write_vlog(sprites, filename):
         print("\t\tactive <= 1'b0;", file=vf)
         print("\t\tromaddr <= 1'b0;", file=vf)
         print("\tend else begin", file=vf)
-        for i in xrange(N-1, 0, -1):
+        for i in xrange(N-1, -1, -1):
             (x, y, width, height, data) = sprites[i]
             c_else = " else " if i < (N-1) else ""
             print("\t\t%sif(enables[%d] && (vx >= %d) && (vx < %d) && (vy >= %d) && (vy < %d)) begin" %
-                  (c_else, i, x, (x + width), y, (y+width)), file=vf)
+                  (c_else, i, x, (x + width), y, (y+height)), file=vf)
             print("\t\t\tactive <= 1'b1;", file=vf)
             print("\t\t\tromaddr <= %d + ((vy - %d) * %d) + (vx - %d);" % (romoffsets[i], y, next_pow2(width), x), file=vf)
             print("\t\tend", file=vf)
