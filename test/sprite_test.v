@@ -24,24 +24,24 @@ lcd_ctrl lcddrv_i (.clk(pixclk), //19.2MHz pixel clock in
                   .rgb_data(rgb_data),
                   .lcd_dat(lcd_dat),
                   .lcd_hsync(lcd_hsync),
-                  .lcd_hsync(lcd_hsync),
+                  .lcd_vsync(lcd_vsync),
                   .lcd_den(lcd_den));
 
-localparam ctr_width = 25;
+localparam ctr_width = 26;
 
 reg [ctr_width-1:0] ctr = 0;
 
 always@(posedge pixclk)
   ctr <= ctr + 1;
 
-wire [3:0] spen;
+wire [11:0] spen;
 
 wire [1:0] ctrtop = ctr[ctr_width-1:ctr_width-2];
 
-assign spen = (ctrtop == 3) ? 4'b1111 :
-              (ctrtop == 2) ? 4'b0111 :
-              (ctrtop == 1) ? 4'b0011 :
-              4'b0001;
+assign spen = (ctrtop == 1) ? 12'b100_000_001_001 :
+              (ctrtop == 2) ? 12'b000_100_000_010 :
+              (ctrtop == 3) ? 12'b001_000_100_100 :
+              12'b000_001_000_010;
 
 wire [1:0] spdat;
 
